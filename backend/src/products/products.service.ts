@@ -34,8 +34,15 @@ export class ProductsService {
     });
   }
 
-  // 5. ลบสินค้า
+  // 5. ลบสินค้า (แก้ใหม่: ลบ OrderItem ที่เกี่ยวข้องก่อน)
   async remove(id: number) {
+    // ขั้นตอนที่ 1: ลบรายการใน OrderItem ที่สินค้านี้เคยถูกซื้อ
+    // (ใช้ deleteMany เพื่อลบทุกรายการที่เจอ)
+    await this.prisma.orderItem.deleteMany({
+      where: { productId: id },
+    });
+
+    // ขั้นตอนที่ 2: พอไม่มีใครอ้างถึงแล้ว ก็ลบสินค้าตัวจริงได้เลย
     return this.prisma.product.delete({
       where: { id },
     });

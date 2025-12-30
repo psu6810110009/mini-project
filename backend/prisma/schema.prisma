@@ -25,7 +25,7 @@ model Product {
   description String?
   price       Decimal  @db.Decimal(10, 2)
   stock       Int
-  image       String?
+  imageUrl    String?
   orderItems  OrderItem[]
   createdAt   DateTime @default(now())
 }
