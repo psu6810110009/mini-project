@@ -2,7 +2,8 @@ import { Routes, Route } from 'react-router-dom';
 import Login from './Login.tsx';
 import Products from './Products.tsx';
 import Register from './Register.tsx';
-import AdminDashboard from './AdminDashboard.tsx'; // 👈 1. เพิ่มบรรทัดนี้ (อย่าลืมสร้างไฟล์ AdminDashboard.tsx ก่อนนะ)
+import AdminDashboard from './AdminDashboard.tsx';
+import ProtectedRoute from './ProtectedRoute'; 
 
 function App() {
   return (
@@ -11,8 +12,15 @@ function App() {
       <Route path="/products" element={<Products />} />
       <Route path="/register" element={<Register />} />
       
-      {/* 👇 2. เพิ่ม Route นี้เข้าไปครับ */}
-      <Route path="/admin" element={<AdminDashboard />} /> 
+      {/* 👇 แก้บรรทัดนี้ครับ: เอา ProtectedRoute มาครอบ AdminDashboard ไว้ */}
+      <Route 
+        path="/admin" 
+        element={
+          <ProtectedRoute>
+            <AdminDashboard />
+          </ProtectedRoute>
+        } 
+      /> 
     </Routes>
   );
 }

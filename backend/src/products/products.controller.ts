@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Put } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -8,16 +8,14 @@ import { AuthGuard } from '@nestjs/passport';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  // --- ลบอันที่ซ้ำตรงนี้ออกไปแล้วครับ ---
-
-  // เพิ่มสินค้า (ต้อง Login ก่อนถึงจะเพิ่มได้)
+  // เพิ่มสินค้า (ต้อง Login)
   @UseGuards(AuthGuard('jwt'))
   @Post()
   create(@Body() createProductDto: CreateProductDto) {
     return this.productsService.create(createProductDto);
   }
 
-  // ดูสินค้าทั้งหมด (ใครๆ ก็ดูได้ ไม่ต้อง Login)
+  // ดูสินค้าทั้งหมด
   @Get()
   findAll() {
     return this.productsService.findAll();
@@ -26,17 +24,18 @@ export class ProductsController {
   // ดูสินค้าเจาะจงชิ้น
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.productsService.findOne(+id); // ใส่ + เพื่อแปลง string เป็น number
+    return this.productsService.findOne(+id);
   }
 
-  // แก้ไข (ต้อง Login)
-  @UseGuards(AuthGuard('jwt'))
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productsService.update(+id, updateProductDto);
+  // ✅ แก้ไข (รวมร่าง: ใช้ PUT ให้ตรงกับ Frontend + ใส่ Guard เพื่อความปลอดภัย)
+  @UseGuards(AuthGuard('jwt')) // บังคับ Login
+  @Put(':id')                  // รับ Method PUT
+  update(@Param('id') id: string, @Body() data: any) { 
+    // ถ้ามี UpdateProductDto จะเปลี่ยนจาก any เป็น UpdateProductDto ก็ได้ครับ
+    return this.productsService.update(+id, data);
   }
 
-  // ลบ (ต้อง Login) -> เก็บอันนี้ไว้ เพราะมี UseGuards
+  // ลบ (ต้อง Login)
   @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   remove(@Param('id') id: string) {

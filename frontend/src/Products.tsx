@@ -9,7 +9,7 @@ interface Product {
   description?: string;
   price: number;
   stock: number;
-  imageUrl?: string; // ใช้ชื่อให้ตรงกับหลังบ้าน (imageUrl หรือ image เช็คดูนะครับ)
+  imageUrl?: string; 
 }
 
 interface CartItem extends Product {
@@ -39,7 +39,7 @@ function Products() {
     }
   };
 
-  // 🛒 ฟังก์ชัน: เพิ่มของลงตะกร้า (อัปเกรด: เช็คสต็อกก่อนเพิ่ม)
+  // 🛒 ฟังก์ชัน: เพิ่มของลงตะกร้า 
   const addToCart = (product: Product) => {
     if (product.stock <= 0) return;
 
@@ -47,7 +47,6 @@ function Products() {
       const existingItem = prevCart.find((item) => item.id === product.id);
       const currentQty = existingItem ? existingItem.quantity : 0;
 
-      // เช็คว่าถ้าเพิ่มอีก 1 จะเกินสต็อกจริงไหม?
       if (currentQty + 1 > product.stock) {
         alert(`มีสินค้าเพียง ${product.stock} ชิ้นในสต็อกครับ`);
         return prevCart;
@@ -58,7 +57,7 @@ function Products() {
           item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       } else {
-        setIsCartOpen(true); // เปิดตะกร้าอัตโนมัติเมื่อใส่ชิ้นแรก
+        setIsCartOpen(true); 
         return [...prevCart, { ...product, quantity: 1 }];
       }
     });
@@ -75,7 +74,6 @@ function Products() {
     if (!confirm(`ยืนยันการสั่งซื้อรวม ${calculateTotal().toLocaleString()} บาท?`)) return;
 
     try {
-      // Mapping ให้ตรงกับที่ Backend (NestJS) ต้องการ
       const orderData = {
         items: cart.map((item) => ({
           productId: item.id,
@@ -88,7 +86,7 @@ function Products() {
       alert('🎉 สั่งซื้อสำเร็จ! ขอบคุณที่อุดหนุนครับ');
       setCart([]); 
       setIsCartOpen(false); 
-      fetchProducts(); // โหลดสต็อกล่าสุด
+      fetchProducts(); 
       
     } catch (error) {
       console.error(error);
@@ -143,7 +141,11 @@ function Products() {
                         <div className="cart-items">
                             {cart.map((item) => (
                                 <div key={item.id} className="cart-item">
-                                    <span>{item.name} (x{item.quantity})</span>
+                                    {/* 👇 แก้จุดที่ 1: ใส่ Capitalize ให้ชื่อในตะกร้า */}
+                                    <span style={{ textTransform: 'capitalize' }}>
+                                      {item.name} (x{item.quantity})
+                                    </span>
+                                    
                                     <div className="cart-item-actions">
                                         <span className="item-price">{(Number(item.price) * item.quantity).toLocaleString()} ฿</span>
                                         <button onClick={() => removeFromCart(item.id)} className="remove-btn">ลบ</button>
@@ -169,7 +171,6 @@ function Products() {
             {products.map((item) => (
             <div key={item.id} className="product-card">
                 <div className="product-image-container">
-                    {/* เช็คทั้ง imageUrl และ image เผื่อ Backend ส่งมาไม่เหมือนกัน */}
                     {item.imageUrl || (item as any).image ? (
                         <img src={item.imageUrl || (item as any).image} alt={item.name} className="product-image" />
                     ) : (
@@ -178,7 +179,11 @@ function Products() {
                 </div>
                 
                 <div className="product-info">
-                    <h3>{item.name}</h3>
+                    {/* 👇 แก้จุดที่ 2: ใส่ Capitalize ให้ชื่อสินค้าหน้าเว็บ */}
+                    <h3 style={{ textTransform: 'capitalize' }}>
+                      {item.name}
+                    </h3>
+
                     <p className="description">{item.description || '-'}</p>
                     
                     <div className="product-meta">
