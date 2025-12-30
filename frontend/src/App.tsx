@@ -1,17 +1,15 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './Login';
-import Products from './Products'; // Import เข้ามาใหม่
+import { Routes, Route } from 'react-router-dom';
+import Login from './Login.tsx';
+import Products from './Products.tsx';
+import Register from './Register.tsx'; // 👈 1. อย่าลืม import
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/login" />} />
-        <Route path="/login" element={<Login />} />
-        {/* เปลี่ยนจากหน้า Coming Soon เป็นหน้า Products จริงๆ */}
-        <Route path="/products" element={<Products />} /> 
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route path="/products" element={<Products />} />
+      <Route path="/register" element={<Register />} /> {/* 👈 2. เพิ่มบรรทัดนี้ */}
+    </Routes>
   );
 }
 

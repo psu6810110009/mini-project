@@ -1,4 +1,4 @@
-// ไฟล์: prisma/schema.prisma
+// backend/prisma/schema.prisma
 
 generator client {
   provider = "prisma-client-js"
@@ -20,19 +20,19 @@ model User {
 }
 
 model Product {
-  id          Int         @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   name        String
   description String?
-  price       Decimal     @db.Decimal(10, 2)
+  price       Decimal  @db.Decimal(10, 2)
   stock       Int
   image       String?
   orderItems  OrderItem[]
-  createdAt   DateTime    @default(now())
+  createdAt   DateTime @default(now())
 }
 
 model Order {
-  id          Int         @id @default(autoincrement())
-  totalPrice  Decimal     @db.Decimal(10, 2)  // <--- เราใช้ชื่อ totalPrice นะครับ
+  id          Int      @id @default(autoincrement())
+  totalPrice  Decimal  @db.Decimal(10, 2)
   status      OrderStatus @default(PENDING)
   userId      Int
   user        User        @relation(fields: [userId], references: [id])
@@ -41,13 +41,13 @@ model Order {
 }
 
 model OrderItem {
-  id        Int     @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   quantity  Int
-  price     Decimal @db.Decimal(10, 2)
+  price     Decimal  @db.Decimal(10, 2)
   orderId   Int
-  order     Order   @relation(fields: [orderId], references: [id])
+  order     Order    @relation(fields: [orderId], references: [id])
   productId Int
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
 }
 
 enum Role {
