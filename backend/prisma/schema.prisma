@@ -1,4 +1,4 @@
-// prisma/schema.prisma
+// ไฟล์: prisma/schema.prisma
 
 generator client {
   provider = "prisma-client-js"
@@ -9,52 +9,47 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 1. ตาราง Users (เก็บคนซื้อ และ Admin)
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   password  String
   fullName  String?
-  role      Role     @default(USER) // แยก Role ตรงนี้
-  orders    Order[]  // 1 User มีหลาย Order
+  role      Role     @default(USER)
+  orders    Order[]
   createdAt DateTime @default(now())
 }
 
-// 2. ตาราง Products (สินค้า)
 model Product {
   id          Int         @id @default(autoincrement())
   name        String
   description String?
   price       Decimal     @db.Decimal(10, 2)
-  stock       Int         // เอาไว้ทำ Logic ตัดสต็อก
+  stock       Int
   image       String?
-  orderItems  OrderItem[] // สินค้านี้ไปอยู่ในหลาย OrderItem ได้
+  orderItems  OrderItem[]
   createdAt   DateTime    @default(now())
 }
 
-// 3. ตาราง Orders (ใบสั่งซื้อ)
 model Order {
-  id         Int         @id @default(autoincrement())
-  totalPrice Decimal     @db.Decimal(10, 2)
-  status     OrderStatus @default(PENDING) // สถานะออเดอร์
-  userId     Int
-  user       User        @relation(fields: [userId], references: [id])
-  items      OrderItem[] // 1 Order มีหลาย Items
-  createdAt  DateTime    @default(now())
+  id          Int         @id @default(autoincrement())
+  totalPrice  Decimal     @db.Decimal(10, 2)  // <--- เราใช้ชื่อ totalPrice นะครับ
+  status      OrderStatus @default(PENDING)
+  userId      Int
+  user        User        @relation(fields: [userId], references: [id])
+  items       OrderItem[]
+  createdAt   DateTime    @default(now())
 }
 
-// 4. ตาราง OrderItems (ตารางกลาง Many-to-Many)
 model OrderItem {
   id        Int     @id @default(autoincrement())
   quantity  Int
-  price     Decimal @db.Decimal(10, 2) // ราคาตอนซื้อ
+  price     Decimal @db.Decimal(10, 2)
   orderId   Int
   order     Order   @relation(fields: [orderId], references: [id])
   productId Int
   product   Product @relation(fields: [productId], references: [id])
 }
 
-// Enum สำหรับ Role และ Status
 enum Role {
   USER
   ADMIN

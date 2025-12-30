@@ -8,6 +8,8 @@ import { AuthGuard } from '@nestjs/passport';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
+  // --- ลบอันที่ซ้ำตรงนี้ออกไปแล้วครับ ---
+
   // เพิ่มสินค้า (ต้อง Login ก่อนถึงจะเพิ่มได้)
   @UseGuards(AuthGuard('jwt'))
   @Post()
@@ -34,7 +36,7 @@ export class ProductsController {
     return this.productsService.update(+id, updateProductDto);
   }
 
-  // ลบ (ต้อง Login)
+  // ลบ (ต้อง Login) -> เก็บอันนี้ไว้ เพราะมี UseGuards
   @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   remove(@Param('id') id: string) {
