@@ -32,7 +32,7 @@ model Product {
 
 model Order {
   id          Int      @id @default(autoincrement())
-  totalPrice  Decimal  @db.Decimal(10, 2)
+  totalPrice  Decimal     @db.Decimal(10, 2)
   status      OrderStatus @default(PENDING)
   userId      Int
   user        User        @relation(fields: [userId], references: [id])

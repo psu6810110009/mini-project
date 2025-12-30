@@ -1,19 +1,20 @@
-import { IsNumber, IsArray, ValidateNested } from 'class-validator';
+import { IsNumber, IsArray, ValidateNested, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
-// 1. สร้าง Class ย่อยสำหรับ "รายการสินค้าแต่ละบรรทัด"
+// 1. Class ย่อย (สินค้าแต่ละรายการ)
 class OrderItemDto {
   @IsNumber()
   productId: number;
 
   @IsNumber()
+  @Min(1) // 👈 เพิ่มตรงนี้: ต้องสั่งอย่างน้อย 1 ชิ้น (ห้ามติดลบ หรือ 0)
   quantity: number;
 }
 
-// 2. Class หลักสำหรับ "ใบสั่งซื้อ"
+// 2. Class หลัก
 export class CreateOrderDto {
   @IsArray()
-  @ValidateNested({ each: true }) // ตรวจสอบข้อมูลใน Array ทุกตัว
+  @ValidateNested({ each: true })
   @Type(() => OrderItemDto)
   items: OrderItemDto[];
 }
