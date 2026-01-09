@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from './api';
 import './Products.css';
+import Swal from 'sweetalert2'; // ✅ 1. อย่าลืม Import Swal
 
 // Interface
 interface Product {
@@ -47,8 +48,14 @@ function Products() {
       const existingItem = prevCart.find((item) => item.id === product.id);
       const currentQty = existingItem ? existingItem.quantity : 0;
 
+      // ✅ 2. แก้ตรงนี้: แจ้งเตือนสินค้าหมดแบบสวยๆ
       if (currentQty + 1 > product.stock) {
-        alert(`มีสินค้าเพียง ${product.stock} ชิ้นในสต็อกครับ`);
+        Swal.fire({
+            icon: 'warning',
+            title: 'สินค้าไม่พอ',
+            text: `เหลือสินค้าเพียง ${product.stock} ชิ้นในสต็อกครับ`,
+            confirmButtonColor: '#f39c12'
+        });
         return prevCart;
       }
 
@@ -63,15 +70,28 @@ function Products() {
     });
   };
 
-  // 🗑️ ฟังก์ชัน: ลบของออกจากตะกร้า
   const removeFromCart = (productId: number) => {
     setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
   };
 
-  // 📦 ฟังก์ชัน: ยืนยันคำสั่งซื้อ
+  // 📦 ฟังก์ชัน: ยืนยันคำสั่งซื้อ (แก้เยอะสุดตรงนี้)
   const handleCheckout = async () => {
     if (cart.length === 0) return;
-    if (!confirm(`ยืนยันการสั่งซื้อรวม ${calculateTotal().toLocaleString()} บาท?`)) return;
+
+    // ✅ 3. ถามยืนยันก่อนซื้อ (แทน confirm แบบเดิม)
+    const result = await Swal.fire({
+        title: 'ยืนยันการสั่งซื้อ?',
+        text: `ยอดรวมทั้งหมด ${calculateTotal().toLocaleString()} บาท`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: '💸 ยืนยันสั่งซื้อ',
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonColor: '#10B981', // สีเขียว
+        cancelButtonColor: '#d33'      // สีแดง
+    });
+
+    // ถ้ากดปุ่มยกเลิก ให้หยุดทำงานทันที
+    if (!result.isConfirmed) return;
 
     try {
       const orderData = {
@@ -83,14 +103,27 @@ function Products() {
 
       await api.post('/orders', orderData);
 
-      alert('🎉 สั่งซื้อสำเร็จ! ขอบคุณที่อุดหนุนครับ');
+      // ✅ 4. แจ้งเตือนเมื่อสำเร็จ (แทน alert เดิม)
+      Swal.fire({
+          title: 'สั่งซื้อสำเร็จ!',
+          text: 'ขอบคุณที่อุดหนุนสินค้าของเราครับ 🎉',
+          icon: 'success',
+          confirmButtonColor: '#10B981'
+      });
+
       setCart([]); 
       setIsCartOpen(false); 
       fetchProducts(); 
       
     } catch (error) {
       console.error(error);
-      alert('❌ เกิดข้อผิดพลาดในการสั่งซื้อ');
+      // ✅ 5. แจ้งเตือนเมื่อ Error
+      Swal.fire({
+          title: 'เกิดข้อผิดพลาด',
+          text: 'ไม่สามารถทำรายการได้ กรุณาลองใหม่อีกครั้ง',
+          icon: 'error',
+          confirmButtonColor: '#d33'
+      });
     }
   };
 
@@ -141,7 +174,6 @@ function Products() {
                         <div className="cart-items">
                             {cart.map((item) => (
                                 <div key={item.id} className="cart-item">
-                                    {/* 👇 แก้จุดที่ 1: ใส่ Capitalize ให้ชื่อในตะกร้า */}
                                     <span style={{ textTransform: 'capitalize' }}>
                                       {item.name} (x{item.quantity})
                                     </span>
@@ -179,7 +211,6 @@ function Products() {
                 </div>
                 
                 <div className="product-info">
-                    {/* 👇 แก้จุดที่ 2: ใส่ Capitalize ให้ชื่อสินค้าหน้าเว็บ */}
                     <h3 style={{ textTransform: 'capitalize' }}>
                       {item.name}
                     </h3>

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import api from './api';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2'; // ✅ 1. เพิ่มบรรทัดนี้
 import './Login.css';
 
 function Login() {
-  // 1. ประกาศตัวแปรเป็น email (ถูกต้องแล้ว)
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const navigate = useNavigate();
@@ -15,18 +15,35 @@ function Login() {
       console.log('กำลัง Login...', email);
       
       const response = await api.post('/auth/login', {
-        email,      // ส่ง email ไป
+        email,      
         password,
       });
 
       localStorage.setItem('token', response.data.access_token);
 
-      alert('Login สำเร็จ! ยินดีต้อนรับครับ 🎉');
-      navigate('/products');
+      // ✅ 2. แก้ตรงนี้: ใช้ Swal แทน alert (Login สำเร็จ)
+      Swal.fire({
+        title: 'Login สำเร็จ!',
+        text: 'ยินดีต้อนรับสู่ Plant Space ครับ 🎉',
+        icon: 'success',
+        confirmButtonText: 'ไปช้อปปิ้งกันเลย! 🛒',
+        confirmButtonColor: '#10B981' // สีเขียวเข้าธีม
+      }).then(() => {
+        // พอกดปุ่ม หรือปิด Popup ให้ไปหน้า Products
+        navigate('/products');
+      });
 
     } catch (error) {
-      alert('Login ไม่ผ่าน! กรุณาตรวจสอบ Email หรือ Password อีกครั้งครับ ❌');
       console.error(error);
+      
+      // ✅ 3. แก้ตรงนี้: ใช้ Swal แทน alert (Login พลาด)
+      Swal.fire({
+        title: 'เข้าสู่ระบบไม่สำเร็จ',
+        text: 'กรุณาตรวจสอบ Email หรือ Password อีกครั้งครับ ❌',
+        icon: 'error',
+        confirmButtonText: 'ลองใหม่',
+        confirmButtonColor: '#d33' // สีแดง
+      });
     }
   };
 
@@ -38,19 +55,18 @@ function Login() {
         </h2>
 
         <div className="login-leaf-divider">
-           🍃
+            🍃
         </div>
 
         <form onSubmit={handleLogin} className="login-form">
-          {/* 👇 จุดที่แก้: เปลี่ยน Input จาก Username เป็น Email ทั้งก้อน */}
           <div className="input-group">
             <label className="input-label" htmlFor="email">Email</label>
             <input
               id="email"
-              type="email" // เปลี่ยน type เป็น email เพื่อให้คีย์บอร์ดมือถือใช้ง่ายขึ้น
+              type="email" 
               className="input-field"
-              value={email} // 👈 ใช้ตัวแปร email
-              onChange={(e) => setEmail(e.target.value)} // 👈 ใช้ function setEmail
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
               placeholder="กรอกอีเมลของคุณ (เช่น test@gmail.com)"
               required
             />
@@ -74,7 +90,7 @@ function Login() {
           </button>
           
           <p style={{marginTop: '10px', textAlign: 'center'}}>
-           ยังไม่มีบัญชี? <span style={{color: 'blue', cursor: 'pointer', textDecoration: 'underline'}} onClick={() => navigate('/register')}>สมัครสมาชิกที่นี่</span>
+            ยังไม่มีบัญชี? <span style={{color: 'blue', cursor: 'pointer', textDecoration: 'underline'}} onClick={() => navigate('/register')}>สมัครสมาชิกที่นี่</span>
           </p>
         </form>
       </div>

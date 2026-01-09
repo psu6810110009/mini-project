@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from './api'; // ✅ เรียกใช้ api ที่เราตั้งค่าไว้
 import './AdminDashboard.css';
+import Swal from 'sweetalert2'; // ✅ Import Swal มาใช้
 
 interface Product {
   id: number;
@@ -23,33 +24,23 @@ export default function AdminDashboard() {
     imageUrl: ''
   });
 
-  // ✨ State สำหรับสินค้าที่กำลังแก้ไข (เพิ่มใหม่)
+  // State สำหรับสินค้าที่กำลังแก้ไข
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  const getAuthHeader = () => {
-    const token = localStorage.getItem('token');
-    return {
-      headers: { Authorization: `Bearer ${token}` }
-    };
-  };
-
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/products');
+      const response = await api.get('/products'); // ✅ ใช้ api.get สั้นๆ
       setProducts(response.data);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error fetching products:", error);
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-         alert("Session หมดอายุ กรุณา Login ใหม่");
-      }
     }
   };
 
-  // --- ส่วนจัดการ Input เพิ่มสินค้า ---
+  // --- Input Change (เพิ่ม) ---
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setNewProduct({
@@ -58,7 +49,7 @@ export default function AdminDashboard() {
     });
   };
 
-  // --- ส่วนจัดการ Input แก้ไขสินค้า (เพิ่มใหม่) ---
+  // --- Input Change (แก้ไข) ---
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!editingProduct) return;
     const { name, value } = e.target;
@@ -68,62 +59,79 @@ export default function AdminDashboard() {
     });
   };
 
-  // ✅ ฟังก์ชันเพิ่มสินค้า (Create)
+  // ✅ ฟังก์ชันเพิ่มสินค้า (Create) - ใช้ Swal
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:3000/products', newProduct, getAuthHeader());
-      alert('เพิ่มสินค้าสำเร็จ! 🎉');
+      await api.post('/products', newProduct);
+      
+      Swal.fire({
+          icon: 'success',
+          title: 'เพิ่มสินค้าสำเร็จ!',
+          text: `เพิ่ม ${newProduct.name} เรียบร้อยแล้ว`,
+          timer: 1500,
+          showConfirmButton: false
+      });
+
       setNewProduct({ name: '', price: 0, stock: 0, description: '', imageUrl: '' }); 
       fetchProducts();
-    } catch (error: any) {
-      if (error.response?.status === 401) {
-        alert('กรุณา Login ก่อนนะครับ!');
-      } else {
-        alert('เกิดข้อผิดพลาดในการเพิ่มสินค้า');
-      }
-    }
-  };
-
-  // ✅ ฟังก์ชันลบสินค้า (Delete)
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('ยืนยันที่จะลบสินค้านี้?')) return;
-    try {
-      await axios.delete(`http://localhost:3000/products/${id}`, getAuthHeader());
-      fetchProducts();
     } catch (error) {
-      alert('ลบสินค้าไม่ได้');
+      Swal.fire('Error', 'เพิ่มสินค้าไม่สำเร็จ', 'error');
     }
   };
 
-  // ✨ ฟังก์ชันเริ่มแก้ไข (เปิด Modal)
-  const handleEditClick = (product: Product) => {
-    setEditingProduct({ ...product }); // Copy ข้อมูลมาใส่ State
+  // ✅ ฟังก์ชันลบสินค้า (Delete) - ใช้ Swal ถามก่อนลบ
+  const handleDelete = async (id: number) => {
+    const result = await Swal.fire({
+        title: 'แน่ใจนะว่าจะลบ?',
+        text: "ข้อมูลจะหายไปถาวรเลยนะครับ",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'ลบเลย!',
+        cancelButtonText: 'ยกเลิก'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            await api.delete(`/products/${id}`);
+            Swal.fire('ลบแล้ว!', 'สินค้าถูกลบเรียบร้อย', 'success');
+            fetchProducts();
+        } catch (error) {
+            Swal.fire('Error', 'ลบสินค้าไม่ได้', 'error');
+        }
+    }
   };
 
-  // ✨ ฟังก์ชันบันทึกการแก้ไข (Update - PUT)
+  // เปิด Modal แก้ไข
+  const handleEditClick = (product: Product) => {
+    setEditingProduct({ ...product });
+  };
+
+  // ✅ ฟังก์ชันบันทึกการแก้ไข (Update) - ใช้ Swal
   const handleUpdateSubmit = async () => {
     if (!editingProduct) return;
     try {
-      // ยิง API PUT ไปที่ /products/:id
-      await axios.put(
-        `http://localhost:3000/products/${editingProduct.id}`, 
-        editingProduct, 
-        getAuthHeader()
-      );
+      await api.put(`/products/${editingProduct.id}`, editingProduct);
       
-      alert('แก้ไขข้อมูลเรียบร้อย! ✨');
+      Swal.fire({
+          icon: 'success',
+          title: 'แก้ไขเรียบร้อย!',
+          timer: 1500,
+          showConfirmButton: false
+      });
+
       setEditingProduct(null); // ปิด Modal
-      fetchProducts(); // โหลดข้อมูลใหม่
+      fetchProducts();
     } catch (error) {
-      console.error(error);
-      alert('แก้ไขไม่สำเร็จ เช็ค Backend ว่ารองรับ PUT ไหม');
+      Swal.fire('Error', 'แก้ไขข้อมูลไม่สำเร็จ', 'error');
     }
   };
 
   return (
     <div className="admin-container">
-      <h1>👑 Admin Dashboard</h1>
+      <h1 style={{textAlign:'center', margin: '20px 0'}}>👑 Admin Dashboard</h1>
       
       {/* 1. การ์ดเพิ่มสินค้า */}
       <div className="card form-card">
@@ -167,7 +175,6 @@ export default function AdminDashboard() {
                 <td>{p.price.toLocaleString()}</td>
                 <td style={{ color: p.stock > 0 ? 'green' : 'red', fontWeight: 'bold' }}>{p.stock}</td>
                 <td>
-                  {/* ปุ่มแก้ไข (เพิ่มใหม่) */}
                   <button 
                     onClick={() => handleEditClick(p)} 
                     className="btn-edit"
@@ -175,7 +182,6 @@ export default function AdminDashboard() {
                   >
                     แก้ไข
                   </button>
-                  {/* ปุ่มลบ */}
                   <button onClick={() => handleDelete(p.id)} className="btn-delete">ลบ</button>
                 </td>
               </tr>
@@ -184,7 +190,7 @@ export default function AdminDashboard() {
         </table>
       </div>
 
-      {/* 3. Modal Popup สำหรับแก้ไข (เพิ่มใหม่) */}
+      {/* 3. Modal Popup สำหรับแก้ไข */}
       {editingProduct && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -194,36 +200,11 @@ export default function AdminDashboard() {
             <h3>✏️ แก้ไขสินค้า ID: {editingProduct.id}</h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <input 
-                name="name" 
-                value={editingProduct.name} 
-                onChange={handleEditChange} 
-                placeholder="ชื่อสินค้า"
-                style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-              />
-              <input 
-                name="price" 
-                type="number"
-                value={editingProduct.price} 
-                onChange={handleEditChange}
-                placeholder="ราคา"
-                style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-              />
-              <input 
-                name="stock" 
-                type="number"
-                value={editingProduct.stock} 
-                onChange={handleEditChange} 
-                placeholder="สต็อก"
-                style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-              />
-               <input 
-                name="imageUrl" 
-                value={editingProduct.imageUrl || ''} 
-                onChange={handleEditChange} 
-                placeholder="URL รูปภาพ"
-                style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-              />
+              <input name="name" value={editingProduct.name} onChange={handleEditChange} placeholder="ชื่อสินค้า" style={inputStyle} />
+              <input name="price" type="number" value={editingProduct.price} onChange={handleEditChange} placeholder="ราคา" style={inputStyle} />
+              <input name="stock" type="number" value={editingProduct.stock} onChange={handleEditChange} placeholder="สต็อก" style={inputStyle} />
+              <input name="imageUrl" value={editingProduct.imageUrl || ''} onChange={handleEditChange} placeholder="URL รูปภาพ" style={inputStyle} />
+              <input name="description" value={editingProduct.description || ''} onChange={handleEditChange} placeholder="รายละเอียด" style={inputStyle} />
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
@@ -247,3 +228,10 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+// Style เล็กน้อยสำหรับ Input ใน Modal
+const inputStyle = {
+    padding: '8px', 
+    border: '1px solid #ddd', 
+    borderRadius: '4px'
+};
