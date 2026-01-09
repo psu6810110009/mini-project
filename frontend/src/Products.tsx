@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from './api';
 import './Products.css';
-import Swal from 'sweetalert2'; // ✅ 1. อย่าลืม Import Swal
+import Swal from 'sweetalert2'; 
 
 // Interface
 interface Product {
@@ -48,7 +48,7 @@ function Products() {
       const existingItem = prevCart.find((item) => item.id === product.id);
       const currentQty = existingItem ? existingItem.quantity : 0;
 
-      // ✅ 2. แก้ตรงนี้: แจ้งเตือนสินค้าหมดแบบสวยๆ
+      // แจ้งเตือนสินค้าหมด
       if (currentQty + 1 > product.stock) {
         Swal.fire({
             icon: 'warning',
@@ -74,11 +74,11 @@ function Products() {
     setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
   };
 
-  // 📦 ฟังก์ชัน: ยืนยันคำสั่งซื้อ (แก้เยอะสุดตรงนี้)
+  // 📦 ฟังก์ชัน: ยืนยันคำสั่งซื้อ
   const handleCheckout = async () => {
     if (cart.length === 0) return;
 
-    // ✅ 3. ถามยืนยันก่อนซื้อ (แทน confirm แบบเดิม)
+    // ถามยืนยันก่อนซื้อ
     const result = await Swal.fire({
         title: 'ยืนยันการสั่งซื้อ?',
         text: `ยอดรวมทั้งหมด ${calculateTotal().toLocaleString()} บาท`,
@@ -86,11 +86,10 @@ function Products() {
         showCancelButton: true,
         confirmButtonText: '💸 ยืนยันสั่งซื้อ',
         cancelButtonText: 'ยกเลิก',
-        confirmButtonColor: '#10B981', // สีเขียว
-        cancelButtonColor: '#d33'      // สีแดง
+        confirmButtonColor: '#10B981', 
+        cancelButtonColor: '#d33'      
     });
 
-    // ถ้ากดปุ่มยกเลิก ให้หยุดทำงานทันที
     if (!result.isConfirmed) return;
 
     try {
@@ -103,12 +102,13 @@ function Products() {
 
       await api.post('/orders', orderData);
 
-      // ✅ 4. แจ้งเตือนเมื่อสำเร็จ (แทน alert เดิม)
+      // ✅ แก้กลับเป็นแจ้งเตือนธรรมดา (เพราะเรามีปุ่มเมนูข้างบนแล้ว)
       Swal.fire({
           title: 'สั่งซื้อสำเร็จ!',
           text: 'ขอบคุณที่อุดหนุนสินค้าของเราครับ 🎉',
           icon: 'success',
-          confirmButtonColor: '#10B981'
+          confirmButtonColor: '#10B981',
+          confirmButtonText: 'ตกลง'
       });
 
       setCart([]); 
@@ -117,7 +117,6 @@ function Products() {
       
     } catch (error) {
       console.error(error);
-      // ✅ 5. แจ้งเตือนเมื่อ Error
       Swal.fire({
           title: 'เกิดข้อผิดพลาด',
           text: 'ไม่สามารถทำรายการได้ กรุณาลองใหม่อีกครั้ง',
@@ -143,6 +142,15 @@ function Products() {
         </div>
         
         <div className="header-actions">
+           {/* ✅ 1. เพิ่มปุ่มดูประวัติ ไว้ตรงนี้ครับ */}
+           <button 
+                onClick={() => window.location.href='/my-orders'} 
+                className="history-btn"
+                style={{ marginRight: '10px', backgroundColor: '#3B82F6', color: 'white', padding: '10px 15px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '1rem' }}
+           >
+                📜 ประวัติการซื้อ
+           </button>
+
            {/* ปุ่มตะกร้า */}
             <button 
                 onClick={() => setIsCartOpen(!isCartOpen)}

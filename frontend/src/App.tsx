@@ -4,6 +4,7 @@ import Products from './Products.tsx';
 import Register from './Register.tsx';
 import AdminDashboard from './AdminDashboard.tsx';
 import ProtectedRoute from './ProtectedRoute'; 
+import MyOrders from './MyOrders'
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       <Route path="/" element={<Login />} />
       <Route path="/products" element={<Products />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/my-orders" element={<MyOrders />} />
       
       {/* 👇 แก้บรรทัดนี้ครับ: เอา ProtectedRoute มาครอบ AdminDashboard ไว้ */}
       <Route 
