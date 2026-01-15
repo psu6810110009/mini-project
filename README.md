@@ -1,4 +1,4 @@
-# Plant Shop Project (Greenery Hub) 🌿
+# Plant Shop Project (Plant Space) 🌿
 
 โปรเจกต์ร้านขายต้นไม้ Full Stack Application พัฒนาด้วย NestJS และ React TypeScript
 
